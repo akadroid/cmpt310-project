@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon AI Identifier | Instant Recognition Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #212529;
+            line-height: 1.6;
+        }
+
+        .header-bar {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #e74c3c;
+            text-decoration: none;
+        }
+
+        .nav-links a {
+            margin-left: 2rem;
+            color: #6c757d;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover {
+            color: #e74c3c;
+        }
+
+        .hero {
+            max-width: 800px;
+            margin: 4rem auto 3rem;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: #6c757d;
+            margin-bottom: 2rem;
+        }
+
+        .tool-container {
+            max-width: 700px;
+            margin: 0 auto 4rem;
+            padding: 0 20px;
+        }
+
+        .upload-card {
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+
+        .upload-card:hover {
+            border-color: #e74c3c;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.1);
+        }
+
+        .upload-card.drag-over {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .upload-icon {
+            width: 60px;
+            height: 60px;
+            background: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+        }
+
+        .upload-card h3 {
+            font-size: 1.25rem;
+            color: #212529;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-card p {
+            color: #6c757d;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-primary {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #c0392b;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 1.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .results-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .image-preview {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .results-header h3 {
+            font-size: 1.25rem;
+            color: #212529;
+        }
+
+        .badge {
+            background: #e74c3c;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .prediction-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .prediction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+
+        .prediction-item:hover {
+            transform: translateX(4px);
+        }
+
+        .prediction-item.top {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .pokemon-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .rank {
+            width: 24px;
+            height: 24px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .prediction-item.top .rank {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .confidence-display {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .confidence-bar {
+            width: 100px;
+            height: 8px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .prediction-item.top .confidence-bar {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: #28a745;
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+
+        .prediction-item.top .confidence-fill {
+            background: white;
+        }
+
+        .confidence-text {
+            font-weight: 600;
+            min-width: 45px;
+        }
+
+        .loading-overlay {
+            display: none;
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .loading-overlay.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f8f9fa;
+            border-top: 4px solid #e74c3c;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .info-section {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 20px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            padding: 2rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .info-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        .info-icon {
+            width: 50px;
+            height: 50px;
+            background: #fef5f4;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-card h3 {
+            font-size: 1.15rem;
+            color: #212529;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-card p {
+            color: #6c757d;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .footer {
+            background: white;
+            border-top: 1px solid #e9ecef;
+            padding: 3rem 0;
+            margin-top: 4rem;
+            text-align: center;
+        }
+
+        .footer p {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .error-alert {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .error-alert.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .confidence-bar {
+                width: 80px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header-bar">
+        <div class="nav-container">
+            <a href="#" class="logo">🎮 PokéAI</a>
+            <nav class="nav-links">
+                <a href="#tool">Tool</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#about">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Pokémon AI Identifier</h1>
+            <p>Upload any Pokémon image and let our Convolution Neural Network (CNN) image classier instantly recognize and identify it.</p>
+        </section>
+
+        <section class="tool-container" id="tool">
+            <div class="upload-card" id="uploadArea">
+                <div class="upload-icon">📸</div>
+                <h3>Upload Your Pokémon Image</h3>
+                <p>Drag and drop an image here, or click to browse</p>
+                <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
+                    Select Image
+                </button>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+
+            <div class="error-alert" id="errorAlert"></div>
+
+            <div class="loading-overlay" id="loading">
+                <div class="spinner"></div>
+                <p style="color: #6c757d;">Analyzing image with AI...</p>
+            </div>
+
+            <div id="resultsContainer" style="display: none;">
+                <div class="results-card">
+                    <div class="image-preview">
+                        <img id="uploadedImage" alt="Uploaded Pokémon">
+                    </div>
+                    
+                    <div class="results-header">
+                        <h3>AI Analysis Results</h3>
+                        <span class="badge">Top Matches</span>
+                    </div>
+                    
+                    <div class="prediction-list" id="predictionList"></div>
+                    
+                    <button class="btn-secondary" onclick="resetTool()">Analyze Another Image</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section" id="how-it-works">
+            <h2 style="text-align: center; font-size: 2rem; margin-bottom: 1rem;">How It Works</h2>
+            <p style="text-align: center; color: #6c757d; max-width: 600px; margin: 0 auto 2rem;">
+                Our AI uses deep learning to analyze visual features and match them against a comprehensive database of Generation 1 Pokémon.
+            </p>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-icon">🔍</div>
+                    <h3>Image Analysis</h3>
+                    <p>Advanced computer vision algorithms analyze color patterns, shapes, and distinctive features in your uploaded image.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon">🧠</div>
+                    <h3>AI Recognition</h3>
+                    <p>Neural networks trained on thousands of Pokémon images identify species with high accuracy and confidence scores.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon">⚡</div>
+                    <h3>Instant Results</h3>
+                    <p>Get identification results in seconds with our trained CNN model.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section" id="about">
+            <h2 style="text-align: center; font-size: 2rem; margin-bottom: 1rem;">📚 Understanding Pokémon Types 📚</h2>
+            <p style="text-align: center; color: #6c757d; max-width: 700px; margin: 0 auto 2rem;">
+                Pokémon types are the foundation of battle strategy. Each type has unique characteristics, advantages, and vulnerabilities. Understanding these relationships is crucial for the dynamic of Pokémon!
+            </p>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-icon">🔥</div>
+                    <h3>Fire</h3>
+                    <p>With their deadly offensive moves and high attack ratings, Fire-type Pokémon are fearsome powerhouses.</p>
+                    <p style="font-size: 0.85rem; color: #6c757d; margin-top: 0.5rem;"><strong>Notable Examples:</strong> Charmander, Arcanine, Moltres, Flareon</p>
+                    <p style="font-size: 0.85rem; color: #28a745; margin-top: 0.5rem;">✓ Strong against: Grass, Ice, Bug, Steel</p>
+                    <p style="font-size: 0.85rem; color: #dc3545;">✗ Weak against: Water, Ground, Rock</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon">💧</div>
+                    <h3>Water</h3>
+                    <p>Water-type Pokémon are among the most adaptable and reliable companions.</p>
+                    <p style="font-size: 0.85rem; color: #6c757d; margin-top: 0.5rem;"><strong>Notable Examples:</strong> Squirtle, Gyarados, Vaporeon, Lapras</p>
+                    <p style="font-size: 0.85rem; color: #28a745; margin-top: 0.5rem;">✓ Strong against: Fire, Ground, Rock</p>
+                    <p style="font-size: 0.85rem; color: #dc3545;">✗ Weak against: Electric, Grass</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon">🍃</div>
+                    <h3>Grass</h3>
+                    <p>Grass-type Pokémon excel in status effects (paralyzing) and healing abilities.</p>
+                    <p style="font-size: 0.85rem; color: #6c757d; margin-top: 0.5rem;"><strong>Notable Examples:</strong> Bulbasaur, Exeggutor, Vileplume</p>
+                    <p style="font-size: 0.85rem; color: #28a745; margin-top: 0.5rem;">✓ Strong against: Water, Ground, Rock</p>
+                    <p style="font-size: 0.85rem; color: #dc3545;">✗ Weak against: Fire, Ice, Poison, Flying, Bug</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon">⚡</div>
+                    <h3>Electric</h3>
+                    <p>With their lightning-fast speed and deadly special moves, lectric-type Pokémon dominate.</p>
+                    <p style="font-size: 0.85rem; color: #6c757d; margin-top: 0.5rem;"><strong>Notable Examples:</strong> Pikachu, Raichu, Zapdos, Jolteon</p>
+                    <p style="font-size: 0.85rem; color: #28a745; margin-top: 0.5rem;">✓ Strong against: Water, Flying</p>
+                    <p style="font-size: 0.85rem; color: #dc3545;">✗ Weak against: Ground</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon">🔮</div>
+                    <h3>Psychic</h3>
+                    <p>Psychic-type Pokémon harness mental abilities for astounding special attack potential.</p>
+                    <p style="font-size: 0.85rem; color: #6c757d; margin-top: 0.5rem;"><strong>Notable Examples:</strong> Alakazam, Mewtwo, Hypno, Mew</p>
+                    <p style="font-size: 0.85rem; color: #28a745; margin-top: 0.5rem;">✓ Strong against: Fighting, Poison</p>
+                    <p style="font-size: 0.85rem; color: #dc3545;">✗ Weak against: Bug, Ghost, Dark</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon">🐉</div>
+                    <h3>Dragon</h3>
+                    <p>Dragon-style Pokémon are mythical creatures that symbolize the highest level of strength.</p>
+                    <p style="font-size: 0.85rem; color: #6c757d; margin-top: 0.5rem;"><strong>Notable Examples:</strong> Dragonite, Dragonair, Dratini</p>
+                    <p style="font-size: 0.85rem; color: #28a745; margin-top: 0.5rem;">✓ Strong against: Dragon</p>
+                    <p style="font-size: 0.85rem; color: #dc3545;">✗ Weak against: Ice, Dragon, Fairy</p>
+                </div>
+            </div>
+
+            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 1.5rem; border-radius: 8px; margin-top: 2rem;">
+                <h4 style="color: #856404; margin-bottom: 0.5rem;">🧬 Advanced Type Mechanics</h4>
+                <p style="color: #856404; font-size: 0.95rem; line-height: 1.6; margin: 0;">
+                    Generation 1 features 15 of the eventual 18 Pokémon types. Many Pokémon possess dual-types (like Charizard's Fire/Flying), creating unique resistance profiles. 
+                </p>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <h2 style="text-align: center; font-size: 2rem; margin-bottom: 1rem;"> Benefits of AI Pokémon Identification </h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-icon">⚡</div>
+                    <h3>Instant Recognition</h3>
+                    <p>Leverage cutting-edge AI to identify any Generation 1 Pokémon in seconds!</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon">🔄</div>
+                    <h3>Evolution Awareness</h3>
+                    <p>Our model understands evolutionary relationships between Pokémon species.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon">📖</div>
+                    <h3>Educational Tool</h3>
+                    <p>Learn about type matchups and Pokémon characteristics.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon">🎯</div>
+                    <h3>High Accuracy</h3>
+                    <p>Trained on thousands of images using advanced AI techniques.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2024 PokéAI Identifier    </p>
+    </footer>
+
+    <script>
+        const GEN1_POKEMON = [
+            'Bulbasaur', 'Ivysaur', 'Venusaur', 'Charmander', 'Charmeleon', 'Charizard',
+            'Squirtle', 'Wartortle', 'Blastoise', 'Pikachu', 'Raichu', 'Mewtwo',
+            'Mew', 'Eevee', 'Vaporeon', 'Jolteon', 'Flareon', 'Snorlax',
+            'Dragonite', 'Gengar', 'Alakazam', 'Machamp', 'Gyarados', 'Lapras',
+            'Articuno', 'Zapdos', 'Moltres', 'Meowth', 'Persian', 'Psyduck',
+            'Golduck', 'Arcanine', 'Poliwrath', 'Kadabra', 'Tentacruel', 'Golem'
+        ];
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const loading = document.getElementById('loading');
+        const errorAlert = document.getElementById('errorAlert');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const uploadedImage = document.getElementById('uploadedImage');
+        const predictionList = document.getElementById('predictionList');
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleImageUpload(file);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleImageUpload(file);
+            }
+        });
+
+        function handleImageUpload(file) {
+            errorAlert.classList.remove('active');
+            
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                uploadedImage.src = e.target.result;
+                uploadArea.style.display = 'none';
+                loading.classList.add('active');
+                
+                try {
+                    await classifyPokemon(e.target.result);
+                } catch (error) {
+                    showError('Failed to analyze image. Please try again.');
+                    loading.classList.remove('active');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function classifyPokemon(imageData) {
+            try {
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 1000,
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                {
+                                    type: 'image',
+                                    source: {
+                                        type: 'base64',
+                                        media_type: 'image/jpeg',
+                                        data: imageData.split(',')[1]
+                                    }
+                                },
+                                {
+                                    type: 'text',
+                                    text: `Analyze this image and identify which Generation 1 Pokémon it shows. Return ONLY a JSON object with this exact format (no markdown, no backticks):
+{"predictions": [{"name": "PokemonName", "confidence": 0.95}, {"name": "PokemonName2", "confidence": 0.85}]}
+
+Include the top 5 most likely matches. Choose only from these Gen 1 Pokémon: ${GEN1_POKEMON.join(', ')}`
+                                }
+                            ]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const data = await response.json();
+                const textContent = data.content.find(c => c.type === 'text')?.text || '';
+                const cleanText = textContent.replace(/```json|```/g, '').trim();
+                const result = JSON.parse(cleanText);
+                
+                displayResults(result.predictions);
+                loading.classList.remove('active');
+                resultsContainer.style.display = 'block';
+            } catch (error) {
+                console.error('Classification error:', error);
+                showError('Unable to identify the Pokémon. Please try with a clearer image.');
+                loading.classList.remove('active');
+                uploadArea.style.display = 'block';
+            }
+        }
+
+        function displayResults(predictions) {
+            predictionList.innerHTML = '';
+            
+            predictions.slice(0, 5).forEach((pred, index) => {
+                const confidence = Math.round(pred.confidence * 100);
+                const item = document.createElement('div');
+                item.className = index === 0 ? 'prediction-item top' : 'prediction-item';
+                
+                item.innerHTML = `
+                    <div class="pokemon-info">
+                        <span class="rank">${index === 0 ? '👑' : index + 1}</span>
+                        <span style="font-size: 1.1rem;">${pred.name}</span>
+                    </div>
+                    <div class="confidence-display">
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${confidence}%"></div>
+                        </div>
+                        <span class="confidence-text">${confidence}%</span>
+                    </div>
+                `;
+                
+                predictionList.appendChild(item);
+            });
+        }
+
+        function showError(message) {
+            errorAlert.textContent = message;
+            errorAlert.classList.add('active');
+        }
+
+        function resetTool() {
+            uploadArea.style.display = 'block';
+            resultsContainer.style.display = 'none';
+            errorAlert.classList.remove('active');
+            fileInput.value = '';
+            predictionList.innerHTML = '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
