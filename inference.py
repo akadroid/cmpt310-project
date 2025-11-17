@@ -28,9 +28,8 @@ test_transforms = transforms.Compose(
     ]
 )
 
-def get_classes():
-    data = torchvision.datasets.ImageFolder(root='data/pokemon')
-    class_names = data.classes
+def get_classes(data):
+    class_names = data
     print('classes:', len(class_names))
     return class_names
 
@@ -44,28 +43,38 @@ def safe_pil_loader(path):
             raise ValueError("Path must be valid")
         return res
 
-def create_model():
+def create_model(data):
     model = convnext_base(weights=ConvNeXt_Base_Weights.DEFAULT)
     # model.classifer[2] is the linear layer
     num_feats = model.classifier[2].in_features
-    model.classifier[2] = torch.nn.Linear(num_feats, len(get_classes()))
+    model.classifier[2] = torch.nn.Sequential(
+        torch.nn.Dropout(0.5),
+        torch.nn.Linear(num_feats, len(get_classes(data)))
+    )
     model = model.to('cuda')
     return model
 
 def main():
-    path = sys.argv[1]
-
-    image = Image.open(path).convert('RGB')
+    try:
+        image_path = sys.argv[1]
+        model_path = sys.argv[2]
+    except:
+         print("Needs a path as argument: path of image and path of model")
+         return
+    
+    image = Image.open(image_path).convert('RGB')
     image = test_transforms(image).unsqueeze(0).to('cuda')
 
-    model = create_model()
-    model.load_state_dict(torch.load(best_model_path, weights_only=True))
+    checkpoint = torch.load(model_path, weights_only=True)
+    model = create_model(checkpoint["class_names"])
+    model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
     
     # Use model and print predicted category
     with torch.no_grad():
         prediction = model(image).squeeze(0).softmax(0)
-        class_names = get_classes()
+        class_names = get_classes(checkpoint["class_names"])
+        print('classes:', len(class_names))
         
         prob, category_id = torch.topk(prediction, 5)
         
