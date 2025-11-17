@@ -647,91 +647,35 @@
                 loading.classList.add('active');
                 
                 try {
-                    await classifyPokemon(e.target.result);
+                    const formData = new FormData(); 
+                    formData.append("file", file);
+                    const response = await fetch("/", {
+                        method: "POST",
+                        body: formData
+                    });
+                    const result = await response.json();
+                    loading.classList.remove("active")
+                    displayResults(result)
                 } catch (error) {
                     showError('Failed to analyze image. Please try again.');
                     loading.classList.remove('active');
+
                 }
             };
             reader.readAsDataURL(file);
         }
 
-        async function classifyPokemon(imageData) {
-            try {
-                const response = await fetch('https://api.anthropic.com/v1/messages', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        model: 'claude-sonnet-4-20250514',
-                        max_tokens: 1000,
-                        messages: [{
-                            role: 'user',
-                            content: [
-                                {
-                                    type: 'image',
-                                    source: {
-                                        type: 'base64',
-                                        media_type: 'image/jpeg',
-                                        data: imageData.split(',')[1]
-                                    }
-                                },
-                                {
-                                    type: 'text',
-                                    text: `Analyze this image and identify which Generation 1 Pokémon it shows. Return ONLY a JSON object with this exact format (no markdown, no backticks):
-{"predictions": [{"name": "PokemonName", "confidence": 0.95}, {"name": "PokemonName2", "confidence": 0.85}]}
-
-Include the top 5 most likely matches. Choose only from these Gen 1 Pokémon: ${GEN1_POKEMON.join(', ')}`
-                                }
-                            ]
-                        }]
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error('API request failed');
-                }
-
-                const data = await response.json();
-                const textContent = data.content.find(c => c.type === 'text')?.text || '';
-                const cleanText = textContent.replace(/```json|```/g, '').trim();
-                const result = JSON.parse(cleanText);
-                
-                displayResults(result.predictions);
-                loading.classList.remove('active');
-                resultsContainer.style.display = 'block';
-            } catch (error) {
-                console.error('Classification error:', error);
-                showError('Unable to identify the Pokémon. Please try with a clearer image.');
-                loading.classList.remove('active');
-                uploadArea.style.display = 'block';
-            }
-        }
-
-        function displayResults(predictions) {
+        function displayResults(result) {
             predictionList.innerHTML = '';
-            
-            predictions.slice(0, 5).forEach((pred, index) => {
-                const confidence = Math.round(pred.confidence * 100);
-                const item = document.createElement('div');
-                item.className = index === 0 ? 'prediction-item top' : 'prediction-item';
-                
-                item.innerHTML = `
-                    <div class="pokemon-info">
-                        <span class="rank">${index === 0 ? '👑' : index + 1}</span>
-                        <span style="font-size: 1.1rem;">${pred.name}</span>
-                    </div>
-                    <div class="confidence-display">
-                        <div class="confidence-bar">
-                            <div class="confidence-fill" style="width: ${confidence}%"></div>
-                        </div>
-                        <span class="confidence-text">${confidence}%</span>
-                    </div>
-                `;
-                
-                predictionList.appendChild(item);
-            });
+
+            if (result.prediction) {
+                const row = document.createElement('div');
+                row.textContent = `Predicted Pokémon: ${result.prediction}`;
+                row.style.fontSize = '1.5rem';
+                row.style.fontWeight = '600';
+                predictionList.appendChild(row);
+            }
+            resultsContainer.style.display = 'block';
         }
 
         function showError(message) {
