@@ -11,7 +11,7 @@ os.makedirs("uploads", exist_ok=True)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-checkpoint = torch.load("results/adam_best_model.pt", map_location=device)
+checkpoint = torch.load("results/muon_best_model.pt", map_location=device)
 class_names = checkpoint["class_names"]
 
 model = convnext_base(weights=ConvNeXt_Base_Weights.DEFAULT)
@@ -45,6 +45,7 @@ def predict():
     file.save(filepath)
 
     result = prediction(filepath)
+    print(result)
     return jsonify({"prediction": result})
 
 @app.route("/", methods=["GET"])
