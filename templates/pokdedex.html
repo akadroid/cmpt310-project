@@ -740,7 +740,7 @@
                 // Meta: id, height, weight
                 const height = (data.height ?? 0) / 10; // meters
                 const weight = (data.weight ?? 0) / 10; // kg
-                pokemonMeta.innerHTML = `#${data.id} • Height: ${height.toFixed(1)} m • Weight: ${weight.toFixed(1)} kg`;
+                pokemonMeta.innerHTML = `${name} #${data.id} • Height: ${height.toFixed(1)} m • Weight: ${weight.toFixed(1)} kg`;
 
                 // Sprite (prefer front_default; fallback to official artwork)
                 const spriteUrl = data.sprites?.front_default 
@@ -789,7 +789,7 @@
 
                 pokemonDetails.style.display = 'block';
             } catch (err) {
-                // Show a gentle note but keep the prediction
+                // API unavailable
                 const note = document.createElement('div');
                 note.style.color = '#856404';
                 note.style.background = '#fff3cd';
