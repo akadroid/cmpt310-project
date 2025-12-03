@@ -1,4 +1,4 @@
-# CMPT310 project
+# CMPT310 Project - Pokedex
 
 ## Instructions
 Download the model from GitHub Releases (https://github.com/akadroid/cmpt310-project/releases) and place it in results/ directory
